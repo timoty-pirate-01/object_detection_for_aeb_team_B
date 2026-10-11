@@ -63,6 +63,12 @@ A döntéshozatalért, a követelmények prioritásáért és a folyamatos, akad
   * 🔌 **Üzenet- és interfésztervezés:** Topicok, service-ek és szabványos ROS észlelési üzenettípusok kezelése.
   * ⚡ **Valós idejű futtatás:** Késleltetési (latency) optimalizáció és hardveres kommunikáció összehangolása.
 
+## A fejlesztési folyamat workflow-ja.
+
+<p align="center">
+  <img src="doc/planning/workflow.png" alt="Agilis Csapatstruktúra" width="850">
+</p>
+
 ---
 
 ## 📋 Összesített Csapatmátrix

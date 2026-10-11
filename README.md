@@ -6,6 +6,12 @@
 
 ## 🧭 Projektvezetés & Agilis Irányítás
 
+## 👥 Munkacsoport felépítése
+
+<p align="center">
+  <img src="doc/planning/csapat-felosztás.png" alt="Agilis Csapatstruktúra" width="850">
+</p>
+
 A döntéshozatalért, a követelmények prioritásáért és a folyamatos, akadálymentes agilis munkamenetért felelős vezetők:
 
 | Szerepkör | Felelős | Elsődleges fókusz |

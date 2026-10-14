@@ -16,8 +16,8 @@ A döntéshozatalért, a követelmények prioritásáért és a folyamatos, akad
 
 | Szerepkör | Felelős | Elsődleges fókusz |
 | :--- | :--- | :--- |
-| **👑 Product Owner** | **Dely Dániel** | Termékvízió, követelménymenedzsment, backlog prioritások, stakeholderek kezelése |
-| **⚡ Scrum Master** | **Horváth Gábor Timót** | Agilis ceremóniák moderálása, akadályok elhárítása, csapatdinamika, hatékonyság |
+| **👑 Product Owner** | **Horváth Gábor Timót** | Termékvízió, követelménymenedzsment, backlog prioritások, stakeholderek kezelése |
+| **⚡ Scrum Master** | **Nardai András Károly** | Agilis ceremóniák moderálása, akadályok elhárítása, csapatdinamika, hatékonyság |
 
 ---
 
@@ -28,7 +28,8 @@ A döntéshozatalért, a követelmények prioritásáért és a folyamatos, akad
 
 * **Csapattagok:**
   * **Horváth Gábor Timót**
-  * **Narday András Károly**
+  * **Nardai András Károly**
+  * **Czéhmester Anna**
 * **Főbb felelősségi körök:**
   * 🎯 **Modellarchitektúrák kiválasztása:** A feladathoz legoptimálisabb mélytanulási hálózatok felkutatása és kiválasztása.
   * 🔬 **Tanítás és finomhangolás:** Hiperparaméter-optimalizáció, kísérletezés, loss-függvények hangolása.
@@ -57,7 +58,7 @@ A döntéshozatalért, a követelmények prioritásáért és a folyamatos, akad
 
 * **Csapattagok:**
   * **Fülöp Zoltán**
-  * **Czéhmester Anna**
+  * **Dely Dániel**
 * **Főbb felelősségi körök:**
   * 📡 **Perception Node megvalósítása:** A detektáló modellek beágyazása és futtatása a ROS hálózatban.
   * 🔌 **Üzenet- és interfésztervezés:** Topicok, service-ek és szabványos ROS észlelési üzenettípusok kezelése.
@@ -75,14 +76,14 @@ A döntéshozatalért, a követelmények prioritásáért és a folyamatos, akad
 
 | Név | Munkacsoport | Szerepkör |
 | :--- | :--- | :--- |
-| **Dely Dániel** | Vezetés | Product Owner |
-| **Horváth Gábor Timót** | Vezetés / AI | Scrum Master, AI Engineer |
-| **Narday András Károly** | Fejlesztés | AI Engineer |
+| **Horváth Gábor Timót** | Vezetés / AI | Product Owner |
+| **Nardai András Károly** | Vezetés / AI | Scrum Master, AI Engineer |
+| **Czéhmester Anna** | Fejlesztés | AI Engineer |
 | **Papp Edina** | Fejlesztés | Data Engineer |
 | **Nagy Szabolcs** | Fejlesztés | Data Engineer |
 | **Botyánszki Balázs** | Fejlesztés | Data Engineer |
 | **Fülöp Zoltán** | Fejlesztés | ROS & Perception Engineer |
-| **Czéhmester Anna** | Fejlesztés | ROS & Perception Engineer |
+| **Dely Dániel** | Fejlesztés | ROS & Perception Engineer |
 
 ---
 

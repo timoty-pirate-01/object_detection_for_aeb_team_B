@@ -14,6 +14,8 @@ Ha a cél a predikció (inferencia) saját adatokon és a későbbi ROS 2 vészf
 | Sebességbecslés | **Igen**, prediktálja a sebességvektort (`vx`, `vy`) | **Nem**, csak pozíciót és méretet ad |
 | Mikor válaszd? | **Ajánlott a projekthez.** A sebességbecslés és a Radar-kompatibilitás miatt vészfékezéshez (AEB) sokkal jobb. | Gyors tesztelésre egyszerű, 4 oszlopos pontfelhőn. |
 
+* **A nuScenes és a KITTI két különböző önvezetéses adathalmaz (dataset). Mindkettő LiDAR-felvételeket és 3D-s annotációkat tartalmaz, a modellek ezeken tanultak. Hogy az előtanított súlyok melyiken készültek, az határozza meg, mit várnak bemenetként és mit tudnak kimenetként. Összességében a nuScenes egy több fajta adaton betanított "okosabb" és robosztusabb adathalmaz, a KITTI pedig egy egyszerűbb és kevesebb fajta adatot tartlamazó kisebb adathalmaz.**
+
 ---
 
 ## 2. A DataLoader működése és a ROS 2 „memória-trükk”

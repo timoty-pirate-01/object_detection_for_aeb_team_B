@@ -10,6 +10,8 @@ Az alábbi táblázat összefoglalja a személygépjárművek valós idejű obje
 | **CenterFusion** | *Nincs hivatalos HF súly (GitHubon elérhető)* | **GitHub:** `HengWeiBin/CenterFusionDetect3D`<br>`nabati/CenterFusion` | Radar + Kamera / LiDAR | **Radar-specialista.** Kifejezetten arra épít, hogy a ritka radar-pontfelhő Doppler-sebességét pontosan hozzárendelje a detektált 3D objektumokhoz. |
 | **VoxelNeXt** | `torch-pointcloud` kollekciók | **OpenPCDet** (`VoxelNeXt` nuScenes és Waymo súlyok) | LiDAR | **Modern, teljesen ritka (sparse) CNN.** Közvetlenül a 3D voxelekből prediktál felesleges és lassító utófeldolgozási lépések (pl. NMS) nélkül. |
 
+* **A voxel a „volumetric pixel” (térfogati képpont) rövidítése: a pixel 3D-s megfelelője. Ahogy a pixel egy 2D-s kép apró négyzete, a voxel a 3D-s tér apró kockája.**
+
 ---
 
 ## Hasznos linkek és keretrendszerek a letöltéshez

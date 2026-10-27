@@ -35,6 +35,8 @@ Ha a `raw_measurements` fájlban pontonként csak 3 (`x, y, z`) vagy 4 (`x, y, z
 
 **2. ROS 2 memória-trükk (nincs fájlból olvasás)**
 
+**Egy fontos pont: a nuScenes 32 sugaras LiDAR-ral készült, a KITTI 64 sugarassal. Ha a szenzor pontsűrűsége - amin dolgozni fogunk - nagyon eltér a tanítóadatétól, a modell pontossága romolhat, bármelyik adathalmazt is választjuk.**
+
 - Pythonban, meglévő méréseken tesztelve használható PyTorch `DataLoader`, amely fájlokból vagy a `raw_measurements`-ből tölti be a képkockákat.
 - ROS 2-ben **soha ne írjuk ki a pontfelhőt a merevlemezre**, hogy a modell onnan olvassa be.
 - Az mmdet3d modern inferencere közvetlenül **memóriából**, egy `np.ndarray` (NumPy tömb) átadásával is tud prediktálni.

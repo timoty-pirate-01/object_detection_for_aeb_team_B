@@ -27,7 +27,7 @@ PerceptionNode::PerceptionNode()
 : Node("perception_node")
 {
     // Az MMDeploy által exportált end2end.onnx útvonala
-    const auto model_path = this->declare_parameter<std::string>("model_path", "");
+    const auto model_path = this->declare_parameter<std::string>("model_path", "model/model.onnx");
     const auto use_cuda = this->declare_parameter<bool>("use_cuda", false);
     loadModel(model_path, use_cuda);
 
@@ -48,7 +48,7 @@ PerceptionNode::PerceptionNode()
 void PerceptionNode::loadModel(const std::string & model_path, bool use_cuda)
 {
     if (model_path.empty()) {
-        throw std::runtime_error("A 'model_path' paraméter nincs megadva (MMDeploy end2end.onnx)");
+        throw std::runtime_error("A 'model_path' paraméter nincs megadva");
     }
 
     Ort::SessionOptions options;

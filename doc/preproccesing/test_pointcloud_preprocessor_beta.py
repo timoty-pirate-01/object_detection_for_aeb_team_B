@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from pointcloud_preprocessor import PointCloudPreprocessor
+from doc.preproccesing.pointcloud_preprocessor_beta import PointCloudPreprocessor
 
 CENTERPOINT_RANGE = [-51.2, -51.2, -5.0, 51.2, 51.2, 3.0]
 RNG = np.random.default_rng(0)

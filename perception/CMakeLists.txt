@@ -25,7 +25,15 @@ get_filename_component(ONNXRUNTIME_LIB_DIR ${ONNXRUNTIME_LIBRARY} DIRECTORY)
 
 include_directories(include)
 
+add_library(pointcloud_preprocessor src/pointcloud_preprocessor.cpp)
+target_compile_features(pointcloud_preprocessor PUBLIC cxx_std_14)
+target_include_directories(pointcloud_preprocessor PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
 add_executable(perception_node src/perceptionNode.cpp)
+target_link_libraries(perception_node pointcloud_preprocessor)
 
 ament_target_dependencies(perception_node
   rclcpp
@@ -42,11 +50,30 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME}
 )
 
+install(TARGETS
+  pointcloud_preprocessor
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+install(DIRECTORY
+  include/
+  DESTINATION include
+)
+
 install(DIRECTORY
   config
   launch
   model
   DESTINATION share/${PROJECT_NAME}
 )
+
+include(CTest)
+if(BUILD_TESTING)
+  add_executable(test_pointcloud_preprocessor test/test_pointcloud_preprocessor.cpp)
+  target_link_libraries(test_pointcloud_preprocessor pointcloud_preprocessor)
+  add_test(NAME pointcloud_preprocessor COMMAND test_pointcloud_preprocessor)
+endif()
 
 ament_package()

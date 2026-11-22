@@ -15,7 +15,7 @@ struct Point
     float y{};
     float z{};
     float intensity{};
-    float feature_4{};
+    float dt{};
 };
 
 struct VoxelizationConfig
@@ -36,6 +36,9 @@ struct VoxelizedPointCloud
     std::vector<std::int32_t> num_points;
     std::vector<std::int32_t> coors;
 };
+
+// CenterPoint Pillar configuration from the deployed MMDetection3D config.
+VoxelizationConfig centerPointPillarNuscenesConfig();
 
 class PointCloudPreprocessor
 {

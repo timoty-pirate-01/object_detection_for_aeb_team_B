@@ -39,10 +39,19 @@ struct VoxelIndexHash
 bool isFinite(const Point & point)
 {
     return std::isfinite(point.x) && std::isfinite(point.y) && std::isfinite(point.z) &&
-           std::isfinite(point.intensity) && std::isfinite(point.feature_4);
+           std::isfinite(point.intensity) && std::isfinite(point.dt);
 }
 
 }  // namespace
+
+VoxelizationConfig centerPointPillarNuscenesConfig()
+{
+    return {
+        {-51.2F, -51.2F, -5.0F},
+        {51.2F, 51.2F, 3.0F},
+        {0.2F, 0.2F, 8.0F},
+        40000};
+}
 
 PointCloudPreprocessor::PointCloudPreprocessor(VoxelizationConfig config)
 : config_(std::move(config))
@@ -145,7 +154,7 @@ VoxelizedPointCloud PointCloudPreprocessor::process(
         }
 
         const std::array<float, VoxelizedPointCloud::kFeaturesPerPoint> features{
-            point.x, point.y, point.z, point.intensity, point.feature_4};
+            point.x, point.y, point.z, point.intensity, point.dt};
         const std::size_t feature_offset =
             (voxel_id * VoxelizedPointCloud::kPointsPerVoxel +
              static_cast<std::size_t>(point_id)) *

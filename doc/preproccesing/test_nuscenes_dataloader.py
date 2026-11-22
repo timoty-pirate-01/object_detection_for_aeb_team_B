@@ -24,6 +24,29 @@ class FakeNuScenes:
                 "token": "lidar-1",
                 "filename": "samples/LIDAR_TOP/frame.pcd.bin",
                 "timestamp": 123456789,
+                "prev": "lidar-prev-1",
+                "ego_pose_token": "ego-1",
+                "calibrated_sensor_token": "sensor-1",
+            },
+            ("sample_data", "lidar-prev-1"): {
+                "token": "lidar-prev-1",
+                "filename": "sweeps/LIDAR_TOP/previous.pcd.bin",
+                "timestamp": 123456689,
+                "prev": "",
+                "ego_pose_token": "ego-prev-1",
+                "calibrated_sensor_token": "sensor-1",
+            },
+            ("ego_pose", "ego-1"): {
+                "translation": [0.0, 0.0, 0.0],
+                "rotation": [1.0, 0.0, 0.0, 0.0],
+            },
+            ("ego_pose", "ego-prev-1"): {
+                "translation": [0.0, 0.0, 0.0],
+                "rotation": [1.0, 0.0, 0.0, 0.0],
+            },
+            ("calibrated_sensor", "sensor-1"): {
+                "translation": [0.0, 0.0, 0.0],
+                "rotation": [1.0, 0.0, 0.0, 0.0],
             },
         }
 
@@ -42,6 +65,14 @@ class NuScenesDataLoaderTests(unittest.TestCase):
             dtype="<f4",
         )
         self.raw_points.tofile(self.lidar_path)
+        self.previous_lidar_path = (
+            self.dataroot / "sweeps" / "LIDAR_TOP" / "previous.pcd.bin"
+        )
+        self.previous_lidar_path.parent.mkdir(parents=True)
+        np.array(
+            [[2, 3, 4, 8, 31], [0.5, 0.5, 1, 9, 32]],
+            dtype="<f4",
+        ).tofile(self.previous_lidar_path)
 
     def tearDown(self) -> None:
         self.temp_dir.cleanup()
@@ -91,6 +122,37 @@ class NuScenesDataLoaderTests(unittest.TestCase):
         loader = NuScenesDataLoader(self.dataroot, nusc=nusc)
         with self.assertRaisesRegex(ValueError, "no LIDAR_TOP"):
             loader.load_sample("sample-1")
+
+    def test_multisweep_loads_current_and_previous_sweep(self) -> None:
+        loader = NuScenesDataLoader(self.dataroot, nusc=FakeNuScenes())
+        frame = loader.load_multisweep(
+            "sample-1",
+            sweeps_num=9,
+            remove_close=False,
+        )
+        self.assertEqual(frame.sweep_count, 10)
+        self.assertEqual(frame.points.shape, (20, 5))
+        np.testing.assert_array_equal(frame.points[:2, 4], [0.0, 0.0])
+        np.testing.assert_allclose(frame.points[2:4, 4], [0.0001, 0.0001])
+        np.testing.assert_array_equal(frame.points[4:, 4], 0.0)
+        self.assertTrue(frame.points.flags["C_CONTIGUOUS"])
+
+    def test_multisweep_remove_close_filters_radius(self) -> None:
+        loader = NuScenesDataLoader(self.dataroot, nusc=FakeNuScenes())
+        frame = loader.load_multisweep(
+            "sample-1",
+            sweeps_num=1,
+            remove_close=True,
+            remove_close_radius=1.0,
+        )
+        # The previous (0.5, 0.5) point is closer than 1 m and is removed.
+        # All current points and the previous (2, 3) point remain.
+        self.assertEqual(frame.points.shape, (3, 5))
+
+    def test_multisweep_rejects_negative_sweep_count(self) -> None:
+        loader = NuScenesDataLoader(self.dataroot, nusc=FakeNuScenes())
+        with self.assertRaisesRegex(ValueError, "non-negative"):
+            loader.load_multisweep("sample-1", sweeps_num=-1)
 
 
 if __name__ == "__main__":

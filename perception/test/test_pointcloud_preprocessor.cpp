@@ -94,6 +94,23 @@ void testEmptyInput()
     assert(output.coors.empty());
 }
 
+void testCenterPointBoundsAndGrid()
+{
+    perception::PointCloudPreprocessor preprocessor(
+        perception::centerPointPillarNuscenesConfig());
+    const std::vector<perception::Point> points{
+        {-51.2F, -51.2F, -5.0F, 1.0F, 0.0F},
+        {-51.0F, -51.0F, 2.99F, 2.0F, 0.0F},
+        {51.2F, 51.2F, 3.0F, 3.0F, 0.0F}};
+
+    const auto output = preprocessor.process(points);
+    assert(output.num_points.size() == 2);
+    assert(output.coors[2] == 0);
+    assert(output.coors[3] == 0);
+    assert(output.coors[6] == 1);
+    assert(output.coors[7] == 1);
+}
+
 }  // namespace
 
 int main()
@@ -103,5 +120,6 @@ int main()
     testPointAndVoxelLimits();
     testInvalidConfiguration();
     testEmptyInput();
+    testCenterPointBoundsAndGrid();
     return 0;
 }

@@ -74,6 +74,9 @@ if(BUILD_TESTING)
   add_executable(test_pointcloud_preprocessor test/test_pointcloud_preprocessor.cpp)
   target_link_libraries(test_pointcloud_preprocessor pointcloud_preprocessor)
   add_test(NAME pointcloud_preprocessor COMMAND test_pointcloud_preprocessor)
+
+  add_executable(nuscenes_voxel_reference test/nuscenes_voxel_reference.cpp)
+  target_link_libraries(nuscenes_voxel_reference pointcloud_preprocessor)
 endif()
 
 ament_package()

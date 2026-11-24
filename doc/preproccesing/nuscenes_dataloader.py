@@ -285,12 +285,15 @@ class NuScenesDataLoader:
             points = np.zeros((raw.shape[0], 5), dtype=np.float32)
             points[:, :4] = raw[:, :4]
 
-            sensor_to_global = ego_to_global @ lidar_to_ego
-            transformed_xyz = _transform_points(
-                points[:, :3],
-                global_to_current_lidar @ sensor_to_global,
-            )
-            points[:, :3] = transformed_xyz
+            if index == 0:
+                points[:, :3] = points[:, :3].astype(np.float32)
+            else:
+                sensor_to_global = ego_to_global @ lidar_to_ego
+                transformed_xyz = _transform_points(
+                    points[:, :3],
+                    global_to_current_lidar @ sensor_to_global,
+                )
+                points[:, :3] = transformed_xyz
             points[:, 4] = (
                 (int(key_timestamp) - int(sweep_timestamp)) / 1_000_000.0
             )

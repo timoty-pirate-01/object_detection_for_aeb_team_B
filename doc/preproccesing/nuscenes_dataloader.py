@@ -336,3 +336,50 @@ class NuScenesDataLoader:
             points=np.ascontiguousarray(combined, dtype=np.float32),
             sweep_count=len(sweep_tokens),
         )
+
+
+def export_multisweep_bin(
+    dataroot: PathLike,
+    sample_token: str,
+    output_path: PathLike,
+    version: str = "v1.0-mini",
+    sweeps_num: int = 9,
+) -> NuScenesFrame:
+    """Export one canonical nuScenes frame for the C++ voxelizer."""
+    loader = NuScenesDataLoader(dataroot=dataroot, version=version)
+    frame = loader.load_multisweep(
+        sample_token=sample_token,
+        sweeps_num=sweeps_num,
+        remove_close=True,
+        pad_empty_sweeps=True,
+    )
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    frame.points.tofile(output)
+    return frame
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Export a nuScenes 10-sweep frame for C++ voxelization",
+    )
+    parser.add_argument("--dataroot", required=True)
+    parser.add_argument("--sample-token", required=True)
+    parser.add_argument("--output", required=True)
+    parser.add_argument("--version", default="v1.0-mini")
+    parser.add_argument("--sweeps-num", type=int, default=9)
+    args = parser.parse_args()
+
+    frame = export_multisweep_bin(
+        dataroot=args.dataroot,
+        sample_token=args.sample_token,
+        output_path=args.output,
+        version=args.version,
+        sweeps_num=args.sweeps_num,
+    )
+    print(
+        f"exported {frame.points.shape[0]} points "
+        f"from {frame.sweep_count} sweeps to {args.output}"
+    )

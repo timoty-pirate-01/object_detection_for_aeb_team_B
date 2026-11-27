@@ -4,17 +4,28 @@
 #include <chrono>
 #include <cstdint>
 #include <cstring>
+#include <functional>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <tf2/exceptions.h>
 
 namespace perception
 {
 
 namespace
 {
+std::size_t configuredPreviousSweeps(rclcpp::Node & node)
+{
+    const int sweeps_num = node.declare_parameter<int>("sweeps_num", 9);
+    if (sweeps_num < 0) {
+        throw std::invalid_argument("A sweeps_num nem lehet negatív");
+    }
+    return static_cast<std::size_t>(sweeps_num);
+}
+
 std::string shapeToString(const std::vector<int64_t> & shape)
 {
     std::ostringstream ss;
@@ -28,19 +39,26 @@ std::string shapeToString(const std::vector<int64_t> & shape)
 }  // namespace
 
 PerceptionNode::PerceptionNode()
-: Node("perception_node")
+: Node("perception_node"),
+  tf_buffer_(this->get_clock()),
+  tf_listener_(tf_buffer_),
+  sweep_buffer_(configuredPreviousSweeps(*this))
 {
     // Az MMDeploy által exportált end2end.onnx útvonala
     const auto model_path = this->declare_parameter<std::string>("model_path", "model/model.onnx");
     const auto use_cuda = this->declare_parameter<bool>("use_cuda", false);
     intensity_field_ = this->declare_parameter<std::string>("intensity_field", "intensity");
-    dt_field_ = this->declare_parameter<std::string>("dt_field", "");
+    dt_field_ = this->declare_parameter<std::string>("dt_field", "dt");
+    input_is_multisweep_ = this->declare_parameter<bool>("input_is_multisweep", false);
+    fixed_frame_ = this->declare_parameter<std::string>("fixed_frame", "odom");
+    const auto pointcloud_topic =
+        this->declare_parameter<std::string>("pointcloud_topic", "pointcloud");
     preprocessor_ = std::make_unique<PointCloudPreprocessor>(
         centerPointPillarNuscenesConfig());
     loadModel(model_path, use_cuda);
 
     sub_pointcloud_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-        "pointcloud",
+        pointcloud_topic,
         10,
         std::bind(&PerceptionNode::pointCloudCallback, this, std::placeholders::_1));
 
@@ -93,7 +111,8 @@ void PerceptionNode::loadModel(const std::string & model_path, bool use_cuda)
     }
 }
 
-void PerceptionNode::pointCloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
+void PerceptionNode::pointCloudCallback(
+    const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
 {
     if (!msg || msg->data.empty()) {
         RCLCPP_WARN_THROTTLE(
@@ -102,64 +121,41 @@ void PerceptionNode::pointCloudCallback(const sensor_msgs::msg::PointCloud2::Sha
         return;
     }
 
-    std::unordered_map<std::string, sensor_msgs::msg::PointField> fields;
-    for (const auto & field : msg->fields) {
-        fields.emplace(field.name, field);
-    }
-
-    const auto x_field = fields.find("x");
-    const auto y_field = fields.find("y");
-    const auto z_field = fields.find("z");
-    if (x_field == fields.end() || y_field == fields.end() || z_field == fields.end()) {
-        RCLCPP_ERROR_THROTTLE(
-            get_logger(), *get_clock(), 2000,
-            "A PointCloud2-ben nincs x, y és z mező");
-        return;
-    }
-
-    const auto readFloat = [msg](const sensor_msgs::msg::PointField & field,
-                                  std::size_t point_offset) -> float {
-        if (field.datatype != sensor_msgs::msg::PointField::FLOAT32) {
-            throw std::runtime_error(
-                "A PointCloud2 numerikus mezőinek FLOAT32 típusúnak kell lenniük");
-        }
-        float value{};
-        std::memcpy(
-            &value,
-            msg->data.data() + point_offset + field.offset,
-            sizeof(value));
-        return value;
-    };
-
     std::vector<Point> points;
-    points.reserve(msg->width * msg->height);
-    try {
-        for (std::uint32_t i = 0; i < msg->width * msg->height; ++i) {
-            const std::size_t point_offset = static_cast<std::size_t>(i) * msg->point_step;
-            float intensity = 0.0F;
-            float dt = 0.0F;
-
-            const auto intensity_field = fields.find(intensity_field_);
-            if (intensity_field != fields.end()) {
-                intensity = readFloat(intensity_field->second, point_offset);
-            }
-            if (!dt_field_.empty()) {
-                const auto dt_field = fields.find(dt_field_);
-                if (dt_field != fields.end()) {
-                    dt = readFloat(dt_field->second, point_offset);
-                }
-            }
-
-            points.push_back({
-                readFloat(x_field->second, point_offset),
-                readFloat(y_field->second, point_offset),
-                readFloat(z_field->second, point_offset),
-                intensity,
-                dt});
+    if (input_is_multisweep_) {
+        try {
+            points = decodePointCloud(*msg, intensity_field_, 0.0F, dt_field_);
+        } catch (const std::exception & e) {
+            RCLCPP_ERROR(get_logger(), "MultiSweep PointCloud2 dekódolási hiba: %s", e.what());
+            return;
         }
-    } catch (const std::exception & e) {
-        RCLCPP_ERROR(get_logger(), "PointCloud2 dekódolási hiba: %s", e.what());
-        return;
+    } else {
+        try {
+            sweep_buffer_.push(msg);
+        } catch (const std::exception & e) {
+            RCLCPP_WARN(get_logger(), "PointCloud2 pufferelési hiba: %s", e.what());
+            return;
+        }
+
+        if (!sweep_buffer_.ready()) {
+            RCLCPP_INFO_THROTTLE(
+                get_logger(), *get_clock(), 5000,
+                "Live MultiSweep puffer feltöltése: %zu/%zu sweep",
+                sweep_buffer_.size(), sweep_buffer_.capacity());
+            return;
+        }
+
+        try {
+            points = sweep_buffer_.assemble(tf_buffer_, fixed_frame_, intensity_field_);
+        } catch (const tf2::TransformException & e) {
+            RCLCPP_WARN_THROTTLE(
+                get_logger(), *get_clock(), 2000,
+                "A MultiSweep TF transzformációja nem érhető el: %s", e.what());
+            return;
+        } catch (const std::exception & e) {
+            RCLCPP_ERROR(get_logger(), "MultiSweep feldolgozási hiba: %s", e.what());
+            return;
+        }
     }
 
     const auto voxelized = preprocessor_->process(points);
